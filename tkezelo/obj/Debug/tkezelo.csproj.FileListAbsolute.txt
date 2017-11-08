@@ -1,0 +1,34 @@
+c:\tkezelo\tkezelo\bin\Debug\tkezelo.exe.config
+c:\tkezelo\tkezelo\bin\Debug\tkezelo.exe
+c:\tkezelo\tkezelo\bin\Debug\tkezelo.pdb
+c:\tkezelo\tkezelo\obj\Debug\tkezelo.main.resources
+c:\tkezelo\tkezelo\obj\Debug\tkezelo.Properties.Resources.resources
+c:\tkezelo\tkezelo\obj\Debug\tkezelo.csproj.GenerateResource.Cache
+c:\tkezelo\tkezelo\obj\Debug\tkezelo.exe
+c:\tkezelo\tkezelo\obj\Debug\tkezelo.pdb
+c:\tkezelo\tkezelo\obj\Debug\tkezelo.csprojResolveAssemblyReference.cache
+X:\tkezelo\tkezelo\bin\Debug\tkezelo.exe.config
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.exe
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.pdb
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.csprojResolveAssemblyReference.cache
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.Main.resources
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.Properties.Resources.resources
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.csproj.GenerateResource.Cache
+X:\tkezelo\tkezelo\bin\Debug\tkezelo.exe
+X:\tkezelo\tkezelo\bin\Debug\tkezelo.pdb
+X:\tkezelo\tkezelo\bin\Debug\MySql.Data.DLL
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.ExcelBuilder.resources
+X:\tkezelo\tkezelo\obj\Debug\tkezelo.Log.resources
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.csprojResolveAssemblyReference.cache
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.ExcelBuilder.resources
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.Log.resources
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.Main.resources
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.Properties.Resources.resources
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.csproj.GenerateResource.Cache
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.csproj.CoreCompileInputs.cache
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.exe
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\obj\Debug\tkezelo.pdb
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\bin\Debug\tkezelo.exe.config
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\bin\Debug\tkezelo.exe
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\bin\Debug\tkezelo.pdb
+E:\Dokumentumok\Visual Studio 2017\Projects\tkezelo\tkezelo\bin\Debug\MySql.Data.DLL

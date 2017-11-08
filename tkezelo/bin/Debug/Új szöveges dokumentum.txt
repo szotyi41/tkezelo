@@ -1,0 +1,375 @@
+/*using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using System.Data.OleDb;
+
+namespace tkezelo
+{
+    class Database
+    {
+        static Main main;
+        static MySqlConnection connection;
+        static MySqlCommand command;
+        static MySqlDataAdapter adapter;
+
+        static DataView dataview;
+
+        public static void Connect(Main m)
+        {
+            main = m;
+            main.dataset = new DataSet();
+
+            main.setProvider.SelectedIndex = 1;
+
+            connection = new MySqlConnection(
+                @"Server=" + main.setDatabaseHost.Text + ";" +
+                @"Port=" + main.setDatabasePort.Text + ";" +
+                @"Database=database;" +
+                @"Uid=" + main.setDatabaseUsername.Text + ";" +
+                @"Pwd=" + main.setDatabasePassword.Text + ";");
+        }
+
+        public static void Load()
+        {
+            try
+            {
+                adapter = new MySqlDataAdapter();
+                adapter.SelectCommand = new MySqlCommand();
+                adapter.SelectCommand.Connection = connection;
+
+                //Adatok betöltése
+                adapter.SelectCommand.CommandText = @"
+                    SELECT id, epuletek.epulet, datum, megnevezes, bevetel, kiadas, egyenleg 
+                    FROM konyveles, epuletek 
+                    WHERE epuletek.epuletid = konyveles.epuletid";
+
+
+                adapter.Fill(main.dataset, "konyveles");
+                main.dgvData.DataSource = main.dataset.Tables["konyveles"];
+
+                //Épületek betöltése
+                adapter.SelectCommand.CommandText = @"SELECT * FROM epuletek";
+
+                adapter.Fill(main.dataset, "epuletek");
+
+                main.setEpulet.DataSource = main.dataset.Tables["epuletek"];
+                main.setEpulet.DisplayMember = main.dataset.Tables["epuletek"].Columns["epulet"].ToString();
+                main.setEpulet.ValueMember = main.dataset.Tables["epuletek"].Columns["epuletid"].ToString();
+                main.setEpulet.SelectedIndex = 0;
+
+                //Nyomtatások betöltése
+                adapter = new MySqlDataAdapter();
+                adapter.SelectCommand = new MySqlCommand();
+                adapter.SelectCommand.Connection = connection;
+
+                adapter.SelectCommand.CommandText = @"SELECT * FROM nyomtatasok";
+
+                adapter.Fill(main.dataset, "nyomtatasok");
+
+                main.setPrintList.DataSource = main.dataset.Tables["nyomtatasok"];
+                main.setPrintList.DisplayMember = main.dataset.Tables["nyomtatasok"].Columns["megnevezes"].ToString();
+                main.setPrintList.ValueMember = main.dataset.Tables["nyomtatasok"].Columns["nyomtatasid"].ToString();
+
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hiba: " + err.ToString());
+            }
+        }
+
+        public static void Filter()
+        {
+            dataview = new DataView(main.dataset.Tables["konyveles"]);
+            main.setPrintName.Text = "";
+
+            //Épület szerint
+            dataview.RowFilter = string.Format("epulet LIKE '%{0}%' ", main.setEpulet.Text);
+            main.setPrintName.Text += main.setEpulet.Text+" ";
+
+            //Megnevezés szerint
+            if (main.setMegnevezes.Text != "")
+            {
+                dataview.RowFilter += string.Format("AND megnevezes LIKE '%{0}%' ", main.setMegnevezes.Text);
+                main.setPrintName.Text += string.Format(" '{0}' ", main.setMegnevezes.Text);
+            }
+
+            string filter = dataview.RowFilter.ToString();
+
+            //Dátum szerint
+            DateTime minDate;
+            DateTime maxDate;
+
+            #region Dátum beállítása
+
+            if (!main.allowDate.Checked)
+            {
+                if (main.setMinMonth.SelectedIndex > 0)
+                {
+                    minDate = new DateTime(Convert.ToInt32(main.setMinYear.Text), main.setMinMonth.SelectedIndex, 1);
+                    main.setPrintName.Text += string.Format("{0}. {1} - ", main.setMinYear.Text, main.setMinMonth.Text);
+                }
+                else
+                {
+                    minDate = new DateTime(Convert.ToInt32(main.setMinYear.Text), 1, 1);
+                    main.setPrintName.Text += string.Format("{0}. elejétõl - ", main.setMinYear.Text);
+                }
+
+                if (main.setMaxMonth.SelectedIndex > 0)
+                {
+                    maxDate = new DateTime(Convert.ToInt32(main.setMaxYear.Text), main.setMaxMonth.SelectedIndex, DateTime.DaysInMonth(Convert.ToInt32(main.setMaxYear.Text), main.setMaxMonth.SelectedIndex) - 1);
+                    main.setPrintName.Text += string.Format("{0}. {1} ", main.setMaxYear.Text, main.setMaxMonth.Text);
+                }
+                else
+                {
+                    maxDate = new DateTime(Convert.ToInt32(main.setMaxYear.Text), 12, 31);
+                    main.setPrintName.Text += string.Format("{0}. végéig ", main.setMaxYear.Text);
+                }
+            }
+            else
+            {
+                if (main.setMinMonth.SelectedIndex > 0)
+                {
+                    //Havi lekérdezés
+                    minDate = new DateTime(Convert.ToInt32(main.setMinYear.Text), main.setMinMonth.SelectedIndex, 1);
+                    maxDate = new DateTime(Convert.ToInt32(main.setMinYear.Text), main.setMinMonth.SelectedIndex, DateTime.DaysInMonth(Convert.ToInt32(main.setMinYear.Text), main.setMinMonth.SelectedIndex) - 1);
+                    main.setPrintName.Text += string.Format("{0}. {1} ", main.setMinYear.Text, main.setMinMonth.Text);
+                }
+                else
+                {
+                    //Éves lekérdezés
+                    minDate = new DateTime(Convert.ToInt32(main.setMinYear.Text), 1, 1);
+                    maxDate = new DateTime(Convert.ToInt32(main.setMinYear.Text), 12, 31);
+                    main.setPrintName.Text += string.Format("{0}. évi ", main.setMinYear.Text);
+                }
+            }
+
+
+            dataview.RowFilter += string.Format("AND datum >= '{0}' AND datum <= '{1}' ",
+                minDate.ToString("yyyy-MM-dd"),
+                maxDate.ToString("yyyy-MM-dd"));
+
+            #endregion
+
+            main.Text = "Társasházkezelõ Szoftver - " + main.setPrintName.Text;
+            main.dgvData.DataSource = dataview;
+
+            //Összesítés
+            int bevetel = 0;
+            int kiadas = 0;
+            int egyenleg = 0;
+            int teljesegyenleg = 0;
+
+            if (dataview.Count > 0)
+            {
+                bevetel = Convert.ToInt32(dataview.Table.Compute("SUM(bevetel)", dataview.RowFilter));
+                kiadas = Convert.ToInt32(dataview.Table.Compute("SUM(kiadas)", dataview.RowFilter));
+                egyenleg = Convert.ToInt32(dataview.Table.Compute("SUM(egyenleg)", dataview.RowFilter));
+                teljesegyenleg = Convert.ToInt32(dataview.Table.Compute("SUM(egyenleg)", filter + string.Format("AND datum <= '{0}'", maxDate.ToString("yyyy-MM-dd"))));
+            }
+
+            main.getBevetel.Text = bevetel.ToString(main.format);
+            main.getKiadas.Text = kiadas.ToString(main.format);
+            main.getEgyenleg.Text = egyenleg.ToString(main.format);
+
+            if (main.allowDate.Checked)
+            {
+                main.getTeljesEgyenleg.Visible = true;
+                main.getTeljesEgyenleg.Text = teljesegyenleg.ToString(main.format);
+            }
+            else
+            {
+                main.getTeljesEgyenleg.Visible = false;
+            }
+        }
+
+
+        public static void Set(int row)
+        {
+
+            try
+            {
+
+                command = new MySqlCommand();
+                command.Connection = connection;
+
+                if (main.dgvData.Rows[row].Cells["id"].Value.ToString() == "")
+                {
+
+                    command.CommandText = @"
+                        INSERT 
+                        INTO konyveles (megnevezes, epuletid, bevetel, kiadas, egyenleg, datum)
+                        VALUES (@megnevezes, @epuletid, @bevetel, @kiadas, @egyenleg, @datum)";
+                    
+                }
+                else
+                {
+
+                    command.CommandText = @"
+                        UPDATE konyveles
+                        SET megnevezes=@megnevezes, bevetel=@bevetel, kiadas=@kiadas, egyenleg=@egyenleg, datum=@datum
+                        WHERE id=@id";
+
+                }
+
+                command.Parameters.AddWithValue("@id", main.dgvData.Rows[row].Cells["id"].Value.ToString());
+                command.Parameters.AddWithValue("@epuletid", main.setEpulet.SelectedValue);
+                command.Parameters.AddWithValue("@megnevezes", main.dgvData.Rows[row].Cells["megnevezes"].Value.ToString());
+                command.Parameters.AddWithValue("@bevetel", main.dgvData.Rows[row].Cells["bevetel"].Value.ToString());
+                command.Parameters.AddWithValue("@kiadas", main.dgvData.Rows[row].Cells["kiadas"].Value.ToString());
+                command.Parameters.AddWithValue("@egyenleg", main.dgvData.Rows[row].Cells["egyenleg"].Value.ToString());
+                command.Parameters.AddWithValue("@datum", DateTime.Parse(main.dgvData.Rows[row].Cells["datum"].Value.ToString()).ToString("yyyy-MM-dd"));
+
+                connection.Open();
+                command.ExecuteNonQuery();
+
+                if (main.dgvData.Rows[row].Cells["id"].Value.ToString() == "") 
+                {
+                    DataRow newrow = main.dataset.Tables["konyveles"].NewRow();
+                    command.CommandText = "SELECT @@IDENTITY";
+                    newrow["id"] = command.ExecuteScalar();
+                    newrow["epulet"] = main.setEpulet.Text;
+                    newrow["datum"] = main.dgvData.Rows[row].Cells["datum"].Value;
+                    newrow["megnevezes"] = main.dgvData.Rows[row].Cells["megnevezes"].Value;
+                    newrow["bevetel"] = main.dgvData.Rows[row].Cells["bevetel"].Value;
+                    newrow["kiadas"] = main.dgvData.Rows[row].Cells["kiadas"].Value;
+                    newrow["egyenleg"] = main.dgvData.Rows[row].Cells["egyenleg"].Value;
+                    main.dataset.Tables["konyveles"].Rows.Add(newrow);
+                }
+
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hiba: " + err.ToString());
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        public static void Remove(int row)
+        {
+            try
+            {
+                adapter = new MySqlDataAdapter();
+                adapter.DeleteCommand = new MySqlCommand();
+                adapter.DeleteCommand.Connection = connection;
+
+                adapter.DeleteCommand.CommandText = @"
+                    DELETE FROM konyveles
+                    WHERE id=@id";
+
+                adapter.DeleteCommand.Parameters.AddWithValue("@id", main.dgvData.Rows[row].Cells["id"].Value.ToString());
+
+                connection.Open();
+                adapter.DeleteCommand.ExecuteNonQuery();
+                adapter.Update(main.dataset, "konyveles");
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Hiba: " + err.ToString());
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public static void PrintRemove(string print)
+        {
+            try
+            {
+                adapter = new MySqlDataAdapter();
+                adapter.DeleteCommand = new MySqlCommand();
+                adapter.DeleteCommand.Connection = connection;
+                adapter.DeleteCommand.CommandText = @"
+                    DELETE
+                    FROM nyomtatasok
+                    WHERE nyomtatasid=" + print;
+
+                connection.Open();
+                adapter.DeleteCommand.ExecuteNonQuery();
+
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.ToString());
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public static void PrintAdd()
+        {
+            try
+            {
+                adapter = new MySqlDataAdapter();
+                adapter.InsertCommand = new MySqlCommand();
+                adapter.InsertCommand.Connection = connection;
+                adapter.InsertCommand.CommandText = 
+                @"
+                    INSERT
+                    INTO nyomtatasok (megnevezes, szures)
+                    VALUES (@megnevezes,@szures);
+                ";
+
+                adapter.InsertCommand.Parameters.AddWithValue("@megnevezes", main.setPrintName.Text);
+                adapter.InsertCommand.Parameters.AddWithValue("@szures", dataview.RowFilter);
+
+                connection.Open();
+                adapter.InsertCommand.ExecuteNonQuery();
+                adapter.Update(main.dataset, "nyomtatasok");
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.ToString());
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public static void EpuletAdd()
+        {
+            try
+            {
+                adapter = new MySqlDataAdapter();
+                adapter.SelectCommand = new MySqlCommand();
+                adapter.SelectCommand.Connection = connection;
+                adapter.SelectCommand.CommandText =
+                @"
+                    INSERT 
+                    INTO epuletek (epulet)
+                    VALUES (@epulet);
+                ";
+
+                connection.Open();
+                adapter.SelectCommand.Parameters.AddWithValue("@epulet", main.tbEpuletAdd.Text);
+                adapter.SelectCommand.ExecuteNonQuery();
+
+                adapter.Fill(main.dataset, "epuletek");
+                main.setEpulet.DataSource = main.dataset.Tables["epuletek"];
+
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.ToString());
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+        }
+
+    }
+}*/

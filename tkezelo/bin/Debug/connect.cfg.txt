@@ -1,0 +1,4 @@
+﻿winsql.vlszki.dcd
+3306
+diak6
+jI50aR
